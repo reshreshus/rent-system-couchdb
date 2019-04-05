@@ -1,0 +1,21 @@
+development: &development
+  protocol: 'http'
+  host: 127.0.0.1
+  port: 5984
+  prefix: rent_system_couchdb
+  suffix: development
+  username: root
+  password: groot
+
+test:
+  <<: *development
+  suffix: test
+
+production:
+  protocol: 'https'
+  host: 127.0.0.1
+  port: 5984
+  prefix: rent_system_couchdb
+  suffix: production
+  username: root
+  password: 123
