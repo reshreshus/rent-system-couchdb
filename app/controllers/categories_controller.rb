@@ -1,16 +1,23 @@
 class CategoriesController < ApplicationController
+  # TODO: This class is not supposed to work
   before_action :set_category, only: [:show, :update, :destroy]
 
   # GET /categories
   def index
     @categories = Category.all
 
-    render json: @categories
+    render json: {status: 'success', data: @categories}, status: :ok
   end
 
   # GET /categories/1
   def show
-    render json: @category
+    render json: {status: 'success', data: @category}, status: :ok
+  end
+
+  # GET /categories/1/subcategories
+  def get_subcategories
+    @subcategories = Subcategory.where(:category_id => params[:id])
+    render json: { status: 'success', data: @subcategories }
   end
 
   # POST /categories
@@ -18,24 +25,26 @@ class CategoriesController < ApplicationController
     @category = Category.new(category_params)
 
     if @category.save
-      render json: @category, status: :created, location: @category
+      render json: {status: 'success', data: @category}, status: :created, location: @category
     else
-      render json: @category.errors, status: :unprocessable_entity
+      render json: {status: 'fail', data: @category.errors}, status: :unprocessable_entity
+
     end
   end
 
   # PATCH/PUT /categories/1
   def update
     if @category.update(category_params)
-      render json: @category
+      render json: {status: 'success', data: @category}, status: :ok
     else
-      render json: @category.errors, status: :unprocessable_entity
+      render json: {status: 'fail', data: @category.errors}, status: :unprocessable_entity
     end
   end
 
   # DELETE /categories/1
   def destroy
     @category.destroy
+    render json: {status: 'success', data: nil}, status: :ok
   end
 
   private
@@ -46,6 +55,7 @@ class CategoriesController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def category_params
-      params.fetch(:category, {})
+      # to create a category, we need only these parameters
+      params.require(:category).permit(:password, :email, :role_id)
     end
 end

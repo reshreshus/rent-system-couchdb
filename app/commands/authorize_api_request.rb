@@ -1,3 +1,4 @@
+# require 'simple_command'
 class AuthorizeApiRequest
   prepend SimpleCommand
 

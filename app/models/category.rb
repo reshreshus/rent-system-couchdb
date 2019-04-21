@@ -6,6 +6,8 @@ class Subcategory
   	property :title,	String
   	property :description,	String
 
+  	# timestamps!
+
  	validates_presence_of :title, :description
   	# design do
 		# view :by_title
