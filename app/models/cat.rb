@@ -1,5 +1,6 @@
 require 'couchrest_model'
 
+
 class Cat < CouchRest::Model::Base
   property :name,        String
   property :last_fed_at, Time
@@ -19,3 +20,5 @@ end
 # puts @cat.name
 
 # @cat.save
+
+# Dir["C:\\Users\\Asus\\inno\\rent-system-couchdb\\models\\*.rb"].each {|file| require file }

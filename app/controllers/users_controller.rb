@@ -108,7 +108,7 @@ class UsersController < ApplicationController
   # Only allow a trusted parameter "white list" through.
   def user_params
     # to create a user, we need only these parameters
-    params.require(:user).permit(:password, :email, :role_id, :name, :surname, :phone)
+    params.require(:user).permit(:password, :email, :role_id, :name, :surname, :phone, :username)
   end
 
   def return_orders_output(orders)
