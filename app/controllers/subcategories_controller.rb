@@ -25,7 +25,7 @@ class SubcategoriesController < ApplicationController
   # POST /subcategories
   def create
     @subcategory = Subcategory.new(subcategory_params)
-
+    @user = User.get(params[:id])
     if @subcategory.save
       # render json: @subcategory, status: :created, location: @subcategory
       render json: {status: 'success', data: @subcategory}, status: :created, location: @subcategory

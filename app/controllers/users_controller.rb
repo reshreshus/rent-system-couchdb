@@ -10,8 +10,15 @@ class UsersController < ApplicationController
   # GET /users
   def index
     @users = User.all
-    # render json: {status: 'success', data: @users}, status: :ok
-    json_response(@users, :ok)
+    total_number = @users.count
+    per_page = 10
+    @users = User.by_email.page(params[:page]).per(per_page)
+    if total_number % per_page == 0
+      total_number_pages = total_number / per_page
+    else
+      total_number_pages = total_number / per_page + 1
+    end
+    render json: { status: :success, data: {total: total_number, per_page: per_page, current_page: params[:page], total_pages: total_number_pages, list: @users} }, status: :ok
   end
 
   # GET /users/1
