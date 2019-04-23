@@ -6,7 +6,6 @@ class SubcategoriesController < ApplicationController
   # GET /subcategories
   def index
     @subcategories = Subcategory.all
-
     render json: {status: 'success', data: @subcategories}, status: :ok
   end
 
@@ -24,15 +23,18 @@ class SubcategoriesController < ApplicationController
 
   # POST /subcategories
   def create
-    @subcategory = Subcategory.new(subcategory_params)
-    @user = User.get(params[:id])
-    if @subcategory.save
-      # render json: @subcategory, status: :created, location: @subcategory
-      render json: {status: 'success', data: @subcategory}, status: :created, location: @subcategory
+    @current_user = AuthorizeApiRequest.call(request.headers).result
+    if @current_user.role_id == 2
+      @subcategory = Subcategory.new(subcategory_params)
+      if @subcategory.save
+        # render json: @subcategory, status: :created, location: @subcategory
+        render json: {status: 'success', data: @subcategory}, status: :created, location: @subcategory
+      else
+        #render json: @subcategory.errors, status: :unprocessable_entity
+        render json: {status: 'fail', data: @subcategory.errors}, status: :unprocessable_entity
+      end
     else
-      #render json: @subcategory.errors, status: :unprocessable_entity
-      render json: {status: 'fail', data: @subcategory.errors}, status: :unprocessable_entity
-
+      render json: {status: 'fail', data: nil}, status: :forbidden
     end
   end
 
@@ -53,14 +55,14 @@ class SubcategoriesController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_subcategory
-      @subcategory = Subcategory.find(params[:id])
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_subcategory
+    @subcategory = Subcategory.find(params[:id])
+  end
 
-    # Only allow a trusted parameter "white list" through.
-    def subcategory_params
-      #TODO
-      params.require(:subcategory).permit(:title, :description)
-    end
+  # Only allow a trusted parameter "white list" through.
+  def subcategory_params
+    #TODO
+    params.require(:subcategory).permit(:title, :description)
+  end
 end

@@ -4,8 +4,17 @@ class OrdersController < ApplicationController
   # GET /orders
   def index
     @orders = Order.all
+    total = @orders.count
+    per_page = 15
+    if total % per_page == 0
+      total_number = total / per_page
+    else
+      total_number = total / per_page + 1
+    end
+    @part_orders = Order.by_user_id.page(params[:page]).per(per_page)
 
-    render json: {status: 'success', data: @orders}, status: :ok
+
+    render json: {status: 'success', data: { list: @part_orders, total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_number }}, status: :ok
   end
 
   # GET /orders/1

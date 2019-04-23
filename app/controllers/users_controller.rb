@@ -9,16 +9,22 @@ class UsersController < ApplicationController
 
   # GET /users
   def index
-    @users = User.all
-    total_number = @users.count
-    per_page = 10
-    @users = User.by_email.page(params[:page]).per(per_page)
-    if total_number % per_page == 0
-      total_number_pages = total_number / per_page
+    @current_user = AuthorizeApiRequest.call(request.headers).result
+    if @current_user.role_id == 2
+      @users = User.all
+      total_number = @users.count
+      per_page = 10
+      @users = User.by_email.page(params[:page]).per(per_page)
+      if total_number % per_page == 0
+        total_number_pages = total_number / per_page
+      else
+        total_number_pages = total_number / per_page + 1
+      end
+      render json: { status: :success, data: {total: total_number, per_page: per_page, current_page: params[:page].to_i, total_pages: total_number_pages, list: @users} }, status: :ok
     else
-      total_number_pages = total_number / per_page + 1
+      render json: { status: :fail, data: nil }, status: :forbidden
     end
-    render json: { status: :success, data: {total: total_number, per_page: per_page, current_page: params[:page], total_pages: total_number_pages, list: @users} }, status: :ok
+
   end
 
   # GET /users/1
