@@ -20,7 +20,7 @@ require 'couchrest_model'
 # require 'subcategory.rb'
 # require_relative 'subcategory'
 
-@db = CouchRest.database!("http://admin:groot@127.0.0.1:5984/rent_system_couchdb_development")
+@db = CouchRest.database!("http://admin:groot@127.0.0.1:5984/rent_couch_d")
 categories = ['Animals', 'Body pars', 'Cloths', 'Furniture', 'Musical instruments', 'Sport', 'Electric equipment', 'Other']
 # db.save_doc('name' => 'seed_test')
 
@@ -56,7 +56,7 @@ def generate_categories(categories)
 		# 'type' => 'Subcategory',
 		# subcategory = Subcategory.new('title' => category, 'description' => Faker::Lorem.sentence)
 		# puts JSON.pretty_generate(subcategory)
-		categories_ids << @db.save_doc('title' => category, 'description' => Faker::Lorem.sentence)['id']
+		categories_ids << @db.save_doc('type' => 'Subcategory', 'title' => category, 'description' => Faker::Lorem.sentence)['id']
 	end
 	return categories_ids
 end
@@ -90,7 +90,8 @@ def generate_items(number_of_items, users_ids, categories_ids)
 	number_of_items.times do
 		user_id = users_ids.sample
 		category_id = categories_ids.sample
-		item_id = @db.save_doc('title' => Faker::Device.model_name, 
+		item_id = @db.save_doc('type' => 'Item', 
+			'title' => Faker::Device.model_name, 
 			'description' => Faker::Lorem.sentence,
 			'price' => Faker::Number.number(3),
 			'duration' => (1 + rand(7)),
@@ -101,7 +102,6 @@ def generate_items(number_of_items, users_ids, categories_ids)
 		user = @db.get(user_id)
 		puts JSON.pretty_generate(user)
 		items_ids << item_id
-		# TODO
 		user['item_ids'] << item_id
 		@db.save_doc(user)
 	end
@@ -112,7 +112,8 @@ def generate_orders(number_of_orders, users_ids, items_ids)
 	number_of_orders.times do
 		user_id = users_ids.sample
 		item_id = items_ids.sample
-		order_id = @db.save_doc('status' => rand(2),
+		order_id = @db.save_doc('type' => 'Order',
+			'status' => rand(2),
 			'user_id' => user_id,
 			'item_id' => item_id,
 			'duration' => rand(4),
@@ -125,8 +126,8 @@ def generate_orders(number_of_orders, users_ids, items_ids)
 	end
 end
 
-users_ids = generate_users(number_of_users)
 categories_ids = generate_categories(categories)
+users_ids = generate_users(number_of_users)
 items_ids = generate_items(number_of_items, users_ids, categories_ids)
 generate_orders(number_of_orders, users_ids, items_ids)
 
