@@ -17,7 +17,6 @@ end
 class Category < CouchRest::Model::Base
 	property :title,      String
 	property :description,	String
-	#has_many :subcategories
 	property :subcategories, Subcategory, :array => true
 
 	timestamps!

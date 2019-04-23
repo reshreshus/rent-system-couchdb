@@ -11,7 +11,7 @@ require 'json'
 
 # CouchRest Model gem
 
-db = CouchRest.database!("http://admin:groot@127.0.0.1:5984/mycompany")
+db = CouchRest.database!("http://admsin:groot@127.0.0.1:5984/mycompany")
 
 # Save a document, with ID
 db.save_doc('_id' => 'doc', 'name' => 'test')

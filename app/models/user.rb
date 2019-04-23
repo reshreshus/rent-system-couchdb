@@ -22,6 +22,16 @@ class User < CouchRest::Model::Base
 
 	design do
 		view :by_email
+		# view :all_items_i_have
+			 # :map =>
+			 # "function(doc) {
+		  #         if (doc.item_ids.length > 0) {
+			 #            doc.item_ids.forEach(function(item_id){
+			 #            	TODO
+			 #              emit(doc.order, 1);
+		  #           });
+		  #         }
+	   #      }"	
 	end
 	has_secure_password
 

@@ -16,7 +16,8 @@ class Item < CouchRest::Model::Base
 	timestamps!
 
 	design do
-		view :by_name
+		view :by_title
+		view :by_price
 		view :by_user_id
 		view :by_subcategory_id
 	end

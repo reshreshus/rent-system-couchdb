@@ -2,20 +2,26 @@ development: &development
   protocol: 'http'
   host: 127.0.0.1
   port: 5984
-  prefix: rent_system_couchdb
-  suffix: development
+  # host: 907f5bf9-d985-4c95-85d8-d5f34ee51a3f-bluemix.cloudant.com
+  # port: 443
+  prefix: rent_couch
+  suffix: d
   username: root
   password: groot
+  # username: feentlyssaillearknothers
+  # password: 61c38b3a2e6ea021a1691c5ff646abdcf318ac9e
 
 test:
   <<: *development
   suffix: test
 
 production:
-  protocol: 'https'
+  protocol: 'http'
   host: 127.0.0.1
   port: 5984
-  prefix: rent_system_couchdb
-  suffix: production
+  # host: 907f5bf9-d985-4c95-85d8-d5f34ee51a3f-bluemix.cloudant.com
+  # port: 443
+  prefix: rent_couch
+  suffix: d
   username: root
-  password: 123
+  password: groot
