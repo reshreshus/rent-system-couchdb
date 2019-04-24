@@ -17,7 +17,10 @@ class ItemsController < ApplicationController
       total_pages = total / per_page + 1
     end
     @part_items = Item.by_title.page(params[:page]).per(per_page)
-    render json: {status: 'success', data: {list: @part_items, total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}, status: :ok
+    # render json: {status: 'success', data: {list: @part_items, total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}, status: :ok
+    # render json: { status: 'success', data: max_price }, status: :ok
+    # render json: { status: 'success', data: @items.first.subcategory_id }, status: :ok
+      render json: {status: 'success', data: {list: @part_items, total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}, status: :ok
     # render json: {status: 'success', data: @items}, status: :ok
   end
 
@@ -55,11 +58,69 @@ class ItemsController < ApplicationController
     render json: {status: 'success', data: nil}, status: :ok
   end
 
+  def geo_search
+    @items = Item.all
+    @max_price = max_price
+    list = Array.new
+    @item = Item.get(params[:id])
+    @items.each do |item|
+      if @item.subcategory_id == item.subcategory_id
+        score = (@item.price.to_i - item.price.to_i).abs
+      else
+        score = @max_price + (@item.price.to_i - item.price.to_i).abs
+      end
+
+      list.push({ id: item.id, name: item.title, price: item.price, score: score, item: item})
+    end
+    list = list.sort_by { |hash| hash[:score].to_i }
+    # list.reject! { |hash| hash[:id] == @item.id }
+    list.delete_if { |hash| hash[:id] == @item.id }
+    items = Array.new
+    for i in (0..2)
+      items.push( { item: list[i] } )
+    end
+
+    render json: { status: 'success', data: items}, status: :ok
+  end
+
+  def geo_search_full
+    @items = Item.all
+    @max_price = max_price
+    list = Array.new
+    @item = Item.get(params[:id])
+    @items.each do |item|
+      if @item.subcategory_id == item.subcategory_id
+        score =  (@item.price.to_i - item.price.to_i).abs
+      else
+        score = @max_price + (@item.price.to_i - item.price.to_i).abs
+      end
+
+      list.push({ id: item.id, name: item.title, price: item.price, score: score })
+    end
+    # list = list.sort_by(&:price.to_i)
+    list = list.sort_by { |hash| hash[:score].to_i }
+
+    list.delete_if { |hash| hash[:id] == @item.id }
+    render json: { status: 'success', data: list }
+    # render json: { status: 'success', data: [ first: list[1], second: list[2], third: list[3] ] }
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_item
       # @item = Item.find(params[:id])
       @item = Item.get(params[:id])
+    end
+
+    def max_price
+      price = 0
+      @items = Item.all
+      @items.each do |item|
+        if item.price.to_i > price.to_i
+          price = item.price.to_i
+        end
+      end
+      price
     end
 
     # Only allow a trusted parameter "white list" through.
