@@ -13,5 +13,7 @@ Rails.application.routes.draw do
   get '/categories/:id/subcategories', to: 'categories#get_subcategories'
   get '/all-categories', to: 'categories#get_all_categories'
   get '/subcategories/:id/items', to: 'subcategories#show_items'
+  get '/items/:id/similar', to: 'items#geo_search'
+  get '/items/:id/similar_all', to: 'items#geo_search_full'
   post 'authenticate', to: 'authentication#authenticate'
 end
