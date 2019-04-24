@@ -3,7 +3,7 @@ require 'couchrest_model'
 class Item < CouchRest::Model::Base
 	property :title,      String
 	property :description,	String
-	property :price,      String
+	property :price,      Integer
 	property :duration,   Integer
 
 	property :image,	String
@@ -16,8 +16,8 @@ class Item < CouchRest::Model::Base
 	timestamps!
 
 	design do
-		view :by_title
 		view :by_price
+		view :by_title
 		view :by_user_id
 		view :by_subcategory_id
 	end

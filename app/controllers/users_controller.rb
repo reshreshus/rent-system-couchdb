@@ -60,8 +60,14 @@ class UsersController < ApplicationController
     render json: { data: @items }
   end
 
+  def get_items_i_rent
+    @current_user = AuthorizeApiRequest.call(request.headers).result
+    @orders = Order.by_user_id.key(@current_user.id)
+    # TODO
+  end
+
   # GET /my-orders/rented
-  def get_items_i_rented
+  def get_orders_i_have_as_a_lessee
     @current_user = AuthorizeApiRequest.call(request.headers).result
     @orders = Order.by_user_id.key(@current_user.id)
 
@@ -69,7 +75,7 @@ class UsersController < ApplicationController
   end
 
   # GET /my-orders/rent
-  def get_items_i_rent
+  def get_orders_of_my_items
     @current_user = AuthorizeApiRequest.call(request.headers).result
     # @orders = Order.where("item_id IN (SELECT item_id FROM items WHERE user_id = #{@current_user.id})")
     # all my items that are rented by somebody
@@ -80,13 +86,15 @@ class UsersController < ApplicationController
 
     orders = Array.new
     items.each do |item|
-      if item['order_ids']
-        # orders += item['order_ids']
-        item['order_ids'].each do |order_id|
-          orders << Order.get(order_id)
-        end
-      end
+      # if item['order_ids']
+      #   # orders += item['order_ids']
+      #   item['order_ids'].each do |order_id|
+      #     orders << Order.get(order_id)
+      #   end
+      # end
     end
+
+
 
 
 
