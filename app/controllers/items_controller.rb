@@ -93,12 +93,10 @@ class ItemsController < ApplicationController
 
       list.push({ id: item.id, name: item.title, price: item.price, score: score })
     end
-    # list = list.sort_by(&:price.to_i)
     list = list.sort_by { |hash| hash[:score].to_i }
 
     list.delete_if { |hash| hash[:id] == @item.id }
     render json: { status: 'success', data: list }
-    # render json: { status: 'success', data: [ first: list[1], second: list[2], third: list[3] ] }
   end
 
   private

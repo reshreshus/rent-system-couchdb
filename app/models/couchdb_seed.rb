@@ -21,7 +21,7 @@ require 'couchrest_model'
 # require_relative 'subcategory'
 
 @db = CouchRest.database!("http://admin:groot@127.0.0.1:5984/rent_couch_di")
-categories = ['Animals', 'Body pars', 'Cloths', 'Furniture', 'Musical instruments', 'Sport', 'Electric equipment', 'Other']
+categories = ['Animals', 'Body parts', 'Clothes', 'Furniture', 'Musical instruments', 'Sport', 'Electric equipment', 'Other']
 # db.save_doc('name' => 'seed_test')
 
 # subcategory = Subcategory.create({
@@ -32,17 +32,6 @@ number_of_categories = categories.length
 number_of_users = 1000
 number_of_orders = 1000
 number_of_items = 10000 - number_of_categories - number_of_users - number_of_orders
-
-
-class Cat < CouchRest::Model::Base
-	property :name,        String
-	property :last_fed_at, Time
-	property :awake,       TrueClass, :default => false
-end
-
-# Assign values to the properties on instantiation
-# @cat = Cat.new(:name => 'Felix2', :last_fed_at => 10.minutes.ago)
-# @db.save_doc(@cat)
 
 require_relative 'subcategory'
 require_relative 'user'
@@ -89,13 +78,13 @@ def generate_items(number_of_items, users_ids, categories_ids)
 		user_id = users_ids.sample
 		category_id = categories_ids.sample
 		items_ids << @db.save_doc('type' => 'Item',
-					 'title' => Faker::Device.model_name,
-					 'description' => Faker::Lorem.sentence,
+					 'title' => Faker::Book::title,
+					 'description' => Faker::Book.author,
 					 'price' => Faker::Number.number(3),
 					 'duration' => (1 + rand(7)),
 					 'subcategory_id' => category_id,
 					 'user_id' => user_id,
-					 'order_ids' => [])['_id']
+					 'order_ids' => [])['id']
 	end
 	return items_ids
 end
@@ -132,6 +121,21 @@ def generate_admin()
 	res = http.request(req)
 end
 
+def generate_admin2()
+	uri = URI('http://localhost:3000/users')
+	http = Net::HTTP.new(uri.host, uri.port)
+	req = Net::HTTP::Post.new(uri.path, {'Content-Type' =>'application/json'})
+	req.body = {'name' => 'Alex',
+				'surname' => 'Kanatov',
+				'username' => 'kanatov_db_one_love',
+				'phone' => '8 800 555 35 35',
+				'email' => 'ka@me.ru',
+				'role_id' => 2,
+				'password' => '1',
+				'password_confirmation' => '1'}.to_json
+	res = http.request(req)
+end
+
 def generate_example_users_and_their_stuff()
 	uri = URI('http://localhost:3000/users')
 	http = Net::HTTP.new(uri.host, uri.port)
@@ -147,6 +151,7 @@ def generate_example_users_and_their_stuff()
 				'password' => '1',
 				'password_confirmation' => '1'}.to_json
 	res = http.request(req)
+	# puts JSON.pretty_generate(JSON.parse(res.body))
 	rishat_id = JSON.parse(res.body)['data']['_id']
 	puts rishat_id
 	# Create user Igor 
@@ -171,13 +176,14 @@ def generate_example_users_and_their_stuff()
 				'password_confirmation' => '1'}.to_json
 	res = http.request(req)
 	sergey_id = JSON.parse(res.body)['data']['_id']
-	i = 1
-
+	
 	category_id = @db.save_doc('type' => 'Subcategory', 
 			'title' => 'Example subcategory', 
 			'description' => '___')['id']
 
 	items_ids = Array.new
+
+	i = 1
 	2.times do
 		items_ids << @db.save_doc('type' => 'Item',
 			 'title' => 'Rishat\s item # ' + i.to_s,
@@ -185,32 +191,35 @@ def generate_example_users_and_their_stuff()
 			 'price' => (i*100).to_s,
 			 'duration' => (1 + rand(7)),
 			 'subcategory_id' => category_id,
-			 'user_id' => rishat_id)
+			 'user_id' => rishat_id)['id']
+		i = i + 1
 	end
 
-	@db.save_doc('type' => 'Order',
+	orders_ids = Array.new
+	orders_ids << @db.save_doc('type' => 'Order',
 				'status' => 1 + rand(8),
 				'user_id' => igor_id,
 				'item_id' => items_ids[0],
 				'duration' => 1 + rand(4),
 				'description' => 'Igor rents Rishat\'s item'
-	)
+	)['id']
 
-	@db.save_doc('type' => 'Order',
+	orders_ids << @db.save_doc('type' => 'Order',
 				'status' => 1 + rand(8),
 				'user_id' => sergey_id,
 				'item_id' => items_ids[1],
 				'duration' => 1 + rand(4),
 				'description' => 'Igor rents Rishat\'s item'
-	)
-	return items_ids
+	)['id']
+	return [items_ids, orders_ids]
 end
 
-categories_ids = generate_categories(categories)
-users_ids = generate_users(number_of_users)
-items_ids = generate_items(number_of_items, users_ids, categories_ids)
-generate_orders(number_of_orders, users_ids, items_ids)
+# categories_ids = generate_categories(categories)
+# users_ids = generate_users(number_of_users)
+# items_ids = generate_items(number_of_items, users_ids, categories_ids)
+# generate_orders(number_of_orders, users_ids, items_ids)
 
 # generate_admin()
 # example_items_ids = generate_example_users_and_their_stuff()
 # p example_items_ids
+generate_admin2()

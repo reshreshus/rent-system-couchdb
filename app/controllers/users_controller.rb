@@ -10,6 +10,9 @@ class UsersController < ApplicationController
   # GET /users
   def index
     @current_user = AuthorizeApiRequest.call(request.headers).result
+    #TODO
+
+
     # if @current_user.role_id == 2
     #   @users = User.all
     #   total_number = @users.count
@@ -73,10 +76,10 @@ class UsersController < ApplicationController
   # GET /my-items/rented
   def get_my_items_that_are_rented
     @current_user = AuthorizeApiRequest.call(request.headers).result
-    items = Item.by_user_id.key(@current_user.id)
+    items = Item.by_user_id.key(@current_user['_id'])
     items_with_orders = Array.new
     items.each do |item|
-      order = Order.find_by_item_id(item['_id'])
+      order = Order.by_item_id.key(item['_id'])
       unless order.nil?
         items_with_orders << item
       end
