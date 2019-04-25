@@ -5,8 +5,21 @@ class SubcategoriesController < ApplicationController
 
   # GET /subcategories
   def index
+    require 'json'
     @subcategories = Subcategory.all
-    render json: {status: 'success', data: @subcategories}, status: :ok
+    # JSON.parse(@subcategories)
+    subcategories_hash = JSON.parse(@subcategories.to_json())
+
+    subcategory_all = {
+      'title' => 'Show all',
+      'description' => 'show items of all categories',
+      '_id' => 0
+    }
+    subcategories_hash.unshift(subcategory_all) 
+
+    # @subcategories = Subcategory.new(subcategories_hash)
+    # JSON.pretty_generate(subcategories_hash)
+    render json: {status: 'success', data: subcategories_hash}, status: :ok
   end
 
   # GET /subcategories/1
@@ -16,9 +29,35 @@ class SubcategoriesController < ApplicationController
 
   # GET /subcategories/1/items
   def show_items
-    @items = Item.by_subcategory_id.key(params[:id])
+    if params[:id] == '0'
+      @items = Item.all
+    else
+      @items = Item.by_subcategory_id.key(params[:id])
+    end
+    # @items.each do |item|:
+    #   item['subcategory'] = Subcategory.get(item['subcategory_id'])
+    # end
 
-    render json: { status: 'success', data: @items }, status: :ok
+    per_page = 10
+    total = @items.count
+    if total % per_page == 0
+      total_pages = total / per_page
+    else
+      total_pages = total / per_page + 1
+    end
+    
+
+    if params[:id] == '0'
+      @part_items = Item.all.page(params[:page]).per(per_page)
+    else
+      @part_items = Item.by_subcategory_id.key(params[:id]).page(params[:page]).per(per_page)
+    end
+
+    @part_items.each do |item|
+      item['subcategory'] = Subcategory.get(item['subcategory_id'])['title']
+    end
+
+      render json: {status: 'success', data: {list: @part_items, paginator: {total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}}, status: :ok
   end
 
   # POST /subcategories

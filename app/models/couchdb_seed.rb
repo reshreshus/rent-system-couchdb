@@ -20,7 +20,7 @@ require 'couchrest_model'
 # require 'subcategory.rb'
 # require_relative 'subcategory'
 
-@db = CouchRest.database!("http://admin:groot@127.0.0.1:5984/rent_couch_d")
+@db = CouchRest.database!("http://admin:groot@127.0.0.1:5984/rent_couch_di")
 categories = ['Animals', 'Body pars', 'Cloths', 'Furniture', 'Musical instruments', 'Sport', 'Electric equipment', 'Other']
 # db.save_doc('name' => 'seed_test')
 
@@ -68,13 +68,13 @@ def generate_users(number_of_users)
 		req = Net::HTTP::Post.new(uri.path, {'Content-Type' =>'application/json'})
 		password = Faker::Internet.password(8, 16)
 		req.body = {'name' => Faker::Name.first_name,
-								'surname' => Faker::Name.last_name,
-								'username' => Faker::Internet.username(5..8),
-								'phone' => Faker::PhoneNumber.phone_number_with_country_code,
-								'email' => Faker::Internet.email,
-								'role_id' => 1,
-								'password' => password,
-								'password_confirmation' => password}.to_json
+					'surname' => Faker::Name.last_name,
+					'username' => Faker::Internet.username(5..8),
+					'phone' => Faker::PhoneNumber.phone_number_with_country_code,
+					'email' => Faker::Internet.email,
+					'role_id' => 1,
+					'password' => password,
+					'password_confirmation' => password}.to_json
 		res = http.request(req)
 		users_ids << JSON.parse(res.body)['data']['_id']
 	end
@@ -84,17 +84,18 @@ end
 # users_ids = generate_users(1)
 
 def generate_items(number_of_items, users_ids, categories_ids)
+	items_ids = Array.new
 	number_of_items.times do
 		user_id = users_ids.sample
 		category_id = categories_ids.sample
-		@db.save_doc('type' => 'Item',
+		items_ids << @db.save_doc('type' => 'Item',
 					 'title' => Faker::Device.model_name,
 					 'description' => Faker::Lorem.sentence,
 					 'price' => Faker::Number.number(3),
 					 'duration' => (1 + rand(7)),
 					 'subcategory_id' => category_id,
 					 'user_id' => user_id,
-					 'order_ids' => [])
+					 'order_ids' => [])['_id']
 	end
 	return items_ids
 end
@@ -107,17 +108,109 @@ def generate_orders(number_of_orders, users_ids, items_ids)
 		user_id = users_ids.sample
 		item_id = items_ids.sample
 		@db.save_doc('type' => 'Order',
-					'status' => rand(2),
+					'status' => 1 + rand(8),
 					'user_id' => user_id,
 					'item_id' => item_id,
-					'duration' => rand(4),
+					'duration' => 1 + rand(4),
 					'description' => Faker::Lorem.sentence
 		)
 	end
 end
 
+def generate_admin()
+	uri = URI('http://localhost:3000/users')
+	http = Net::HTTP.new(uri.host, uri.port)
+	req = Net::HTTP::Post.new(uri.path, {'Content-Type' =>'application/json'})
+	req.body = {'name' => 'Alexey',
+				'surname' => 'Kanatov',
+				'username' => 'kanatov_db_one_love',
+				'phone' => '8 800 555 35 35',
+				'email' => 'k@me.ru',
+				'role_id' => 2,
+				'password' => '1',
+				'password_confirmation' => '1'}.to_json
+	res = http.request(req)
+end
+
+def generate_example_users_and_their_stuff()
+	uri = URI('http://localhost:3000/users')
+	http = Net::HTTP.new(uri.host, uri.port)
+	req = Net::HTTP::Post.new(uri.path, {'Content-Type' =>'application/json'})
+	# Create user Rishat
+
+	req.body = {'name' => 'Rishat',
+				'surname' => 'Rizvanov',
+				'username' => 'reshreshus',
+				'phone' => '8 800 555 35 35',
+				'email' => 'r.rizvanov@innopolis.ru',
+				'role_id' => 1,
+				'password' => '1',
+				'password_confirmation' => '1'}.to_json
+	res = http.request(req)
+	rishat_id = JSON.parse(res.body)['data']['_id']
+	puts rishat_id
+	# Create user Igor 
+	req.body = {'name' => 'Igor',
+				'surname' => 'Rizvanov',
+				'username' => 'vakhula',
+				'phone' => '8 800 555 35 35',
+				'email' => 'i.vakhula@innopolis.ru',
+				'role_id' => 1,
+				'password' => '1',
+				'password_confirmation' => '1'}.to_json
+	res = http.request(req)
+	igor_id = JSON.parse(res.body)['data']['_id']
+	# Create user Sergey
+	req.body = {'name' => 'Sergey',
+				'surname' => 'Markin',
+				'username' => 'markin',
+				'phone' => '8 800 555 35 35',
+				'email' => 's.markinv@innopolis.ru',
+				'role_id' => 1,
+				'password' => '1',
+				'password_confirmation' => '1'}.to_json
+	res = http.request(req)
+	sergey_id = JSON.parse(res.body)['data']['_id']
+	i = 1
+
+	category_id = @db.save_doc('type' => 'Subcategory', 
+			'title' => 'Example subcategory', 
+			'description' => '___')['id']
+
+	items_ids = Array.new
+	2.times do
+		items_ids << @db.save_doc('type' => 'Item',
+			 'title' => 'Rishat\s item # ' + i.to_s,
+			 'description' => '___',
+			 'price' => (i*100).to_s,
+			 'duration' => (1 + rand(7)),
+			 'subcategory_id' => category_id,
+			 'user_id' => rishat_id)
+	end
+
+	@db.save_doc('type' => 'Order',
+				'status' => 1 + rand(8),
+				'user_id' => igor_id,
+				'item_id' => items_ids[0],
+				'duration' => 1 + rand(4),
+				'description' => 'Igor rents Rishat\'s item'
+	)
+
+	@db.save_doc('type' => 'Order',
+				'status' => 1 + rand(8),
+				'user_id' => sergey_id,
+				'item_id' => items_ids[1],
+				'duration' => 1 + rand(4),
+				'description' => 'Igor rents Rishat\'s item'
+	)
+	return items_ids
+end
 
 categories_ids = generate_categories(categories)
 users_ids = generate_users(number_of_users)
 items_ids = generate_items(number_of_items, users_ids, categories_ids)
 generate_orders(number_of_orders, users_ids, items_ids)
+
+# generate_admin()
+# example_items_ids = generate_example_users_and_their_stuff()
+# p example_items_ids

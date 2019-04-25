@@ -10,21 +10,22 @@ class UsersController < ApplicationController
   # GET /users
   def index
     @current_user = AuthorizeApiRequest.call(request.headers).result
-    if @current_user.role_id == 2
-      @users = User.all
-      total_number = @users.count
-      per_page = 10
-      @users = User.by_email.page(params[:page]).per(per_page)
-      if total_number % per_page == 0
-        total_number_pages = total_number / per_page
-      else
-        total_number_pages = total_number / per_page + 1
-      end
-      render json: { status: :success, data: {total: total_number, per_page: per_page, current_page: params[:page].to_i, total_pages: total_number_pages, list: @users} }, status: :ok
-    else
-      render json: { status: :fail, data: nil }, status: :forbidden
-    end
-
+    # if @current_user.role_id == 2
+    #   @users = User.all
+    #   total_number = @users.count
+    #   per_page = 10
+    #   @users = User.by_email.page(params[:page]).per(per_page)
+    #   if total_number % per_page == 0
+    #     total_number_pages = total_number / per_page
+    #   else
+    #     total_number_pages = total_number / per_page + 1
+    #   end
+    #   render json: { status: :success, data: {total: total_number, per_page: per_page, current_page: params[:page].to_i, total_pages: total_number_pages, list: @users} }, status: :ok
+    # else
+    #   render json: { status: :fail, data: nil }, status: :forbidden
+    # end
+    @users = User.all
+    render json: {status: :ok, data: @users}
   end
 
   # GET /users/1
@@ -53,17 +54,34 @@ class UsersController < ApplicationController
   # GET /my-items/ items of current user
   def get_user_items
     @current_user = AuthorizeApiRequest.call(request.headers).result
-    @items = Item.by_user_id.key(@current_user.id)
-    # Find_by_user_id returns first
-    # @items = Item.find_by_user_id(@current_user.id)
+    @items = Item.by_user_id.key(@current_user['_id'])
 
-    render json: { data: @items }
+    per_page = 10
+    total = @items.count
+    if total % per_page == 0
+      total_pages = total / per_page
+    else
+      total_pages = total / per_page + 1
+    end
+    @part_items = Item.by_user_id.page(params[:page]).per(per_page)
+    render json: {status: 'success', data: {list: @part_items, paginator: {total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}}, status: :ok
+
+    # render json: { data: @items}, status: :ok
   end
 
-  def get_items_i_rent
+# TODO
+  # GET /my-items/rented
+  def get_my_items_that_are_rented
     @current_user = AuthorizeApiRequest.call(request.headers).result
-    @orders = Order.by_user_id.key(@current_user.id)
-    # TODO
+    items = Item.by_user_id.key(@current_user.id)
+    items_with_orders = Array.new
+    items.each do |item|
+      order = Order.find_by_item_id(item['_id'])
+      unless order.nil?
+        items_with_orders << item
+      end
+    end
+    render json: { status: 'success', data: items_with_orders }
   end
 
   # GET /my-orders/rented
@@ -77,27 +95,19 @@ class UsersController < ApplicationController
   # GET /my-orders/rent
   def get_orders_of_my_items
     @current_user = AuthorizeApiRequest.call(request.headers).result
-    # @orders = Order.where("item_id IN (SELECT item_id FROM items WHERE user_id = #{@current_user.id})")
-    # all my items that are rented by somebody
-    # bad for document-based, though
     items = Item.by_user_id.key(@current_user.id)
 
     # render json: { status: 'success', data: items}
 
     orders = Array.new
     items.each do |item|
-      # if item['order_ids']
-      #   # orders += item['order_ids']
-      #   item['order_ids'].each do |order_id|
-      #     orders << Order.get(order_id)
-      #   end
-      # end
+      if item['order_ids']
+        # orders += item['order_ids']
+        item['order_ids'].each do |order_id|
+          orders << Order.get(order_id)
+        end
+      end
     end
-
-
-
-
-
     render json: { status: 'success', data: return_orders_output(orders) }
   end
 

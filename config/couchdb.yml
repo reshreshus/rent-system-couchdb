@@ -5,7 +5,7 @@ development: &development
   # host: 907f5bf9-d985-4c95-85d8-d5f34ee51a3f-bluemix.cloudant.com
   # port: 443
   prefix: rent_couch
-  suffix: d
+  suffix: di
   username: root
   password: groot
   # username: feentlyssaillearknothers
@@ -22,6 +22,6 @@ production:
   # host: 907f5bf9-d985-4c95-85d8-d5f34ee51a3f-bluemix.cloudant.com
   # port: 443
   prefix: rent_couch
-  suffix: d
+  suffix: di
   username: root
   password: groot

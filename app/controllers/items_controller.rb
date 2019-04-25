@@ -9,7 +9,7 @@ class ItemsController < ApplicationController
   # GET /items
   def index
     @items = Item.all
-    per_page = 15
+    per_page = 10
     total = @items.count
     if total % per_page == 0
       total_pages = total / per_page
@@ -17,11 +17,7 @@ class ItemsController < ApplicationController
       total_pages = total / per_page + 1
     end
     @part_items = Item.by_title.page(params[:page]).per(per_page)
-    # render json: {status: 'success', data: {list: @part_items, total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}, status: :ok
-    # render json: { status: 'success', data: max_price }, status: :ok
-    # render json: { status: 'success', data: @items.first.subcategory_id }, status: :ok
-      render json: {status: 'success', data: {list: @part_items, total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}, status: :ok
-    # render json: {status: 'success', data: @items}, status: :ok
+      render json: {status: 'success', data: {list: @part_items, paginator: {total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}}, status: :ok
   end
 
   # GET /items/1
