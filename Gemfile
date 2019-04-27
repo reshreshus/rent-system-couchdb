@@ -6,6 +6,7 @@ gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
 # gem 'sqlite3', group:  :development
 # gem 'pg', '~> 0.18.4', group: :development
 
+gem 'rest-client', '~> 2.0', '>= 2.0.2'
 gem 'couchrest_model'
 gem 'couchrest'
 # gem 'bootsnap', '>= 1.1.0', require: false
