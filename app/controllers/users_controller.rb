@@ -50,7 +50,7 @@ class UsersController < ApplicationController
       render json: {status: 'success', data: @user}, status: :created, location: @user
     else
       render json: {status: 'fail', data: @user.errors}, status: :unprocessable_entity
-    end
+    end 
   end
 
   # GET /users/{id}/items - shows only items of current user - deprecated
@@ -66,7 +66,7 @@ class UsersController < ApplicationController
     else
       total_pages = total / per_page + 1
     end
-    @part_items = Item.by_user_id.page(params[:page]).per(per_page)
+    @part_items = Item.by_user_id.key(@current_user['_id']).page(params[:page]).per(per_page)
     render json: {status: 'success', data: {list: @part_items, paginator: {total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}}, status: :ok
 
     # render json: { data: @items}, status: :ok
