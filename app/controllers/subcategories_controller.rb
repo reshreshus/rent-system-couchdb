@@ -54,7 +54,16 @@ class SubcategoriesController < ApplicationController
     end
 
     @part_items.each do |item|
-      item['subcategory'] = Subcategory.get(item['subcategory_id'])['title']
+      subcategory = Subcategory.get(item['subcategory_id'])
+      # Crutch !!
+      if subcategory.nil?
+        # @part_items.delete_at(@part_items.index(item))
+        # @part_items.delete_at(item)
+        item.destroy
+      else
+        item['subcategory'] = subcategory['title']
+      end
+
     end
 
       render json: {status: 'success', data: {list: @part_items, paginator: {total: total, per_page: per_page, current_page: params[:page].to_i, total_pages: total_pages}}}, status: :ok
